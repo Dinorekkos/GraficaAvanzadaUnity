@@ -1,10 +1,10 @@
-Shader "Unlit/Dissolve"
+Shader "Unlit/MoveTexture"
 {
     Properties
     {
-        _MainTex ("Main Texture", 2D) = "white" {}
-        _NoiseTex ("Noise Texture", 2D) = "white" {}
-        _ThreshHold ("ThreshHold", Range(0,5)) = 0.5
+        _MainTex ("Texture", 2D) = "white" {}
+        _ScrollSpeedX ("Scroll X", Range(0,5)) = 0
+        _ScrollSpeedY ("Scroll Y",  Range(0,5))= 0  
     }
     SubShader
     {
@@ -16,7 +16,7 @@ Shader "Unlit/Dissolve"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-
+            
             #include "UnityCG.cginc"
 
             struct appdata
@@ -28,14 +28,14 @@ Shader "Unlit/Dissolve"
             struct v2f
             {
                 float2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
             };
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            sampler2D _NoiseTex;
-            float _ThreshHold;
+            float _ScrollSpeedX;
+            float _ScrollSpeedY;
+            float _time;
 
             v2f vert (appdata v)
             {
@@ -47,15 +47,9 @@ Shader "Unlit/Dissolve"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                _ThreshHold = sin(_Time.y) * .5f + .5f;
-                // sample the texture
+                i.uv.y += _Time * _ScrollSpeedY; 
+                i.uv.x += _Time * _ScrollSpeedX; 
                 fixed4 col = tex2D(_MainTex, i.uv);
-                fixed4 noise = tex2D(_NoiseTex, i.uv);
-                if(noise.r < _ThreshHold)
-                {
-                    discard;
-                }
-                
                 return col;
             }
             ENDCG
