@@ -21,35 +21,34 @@ Shader "Custom/CelShading_Dino"
 
         #pragma target 3.0
 
-        sampler2D _MainTex;
-        sampler2D _RampTexture;
+        
 
 
         struct Input
         {
             float2 uv_MainTex;
             float3 worldPos;
-            float3 worldNormal;
             
         };
 
+        sampler2D _MainTex;
+        sampler2D _RampTexture;
         fixed4 _Color;
         fixed4 _OutlineColor;
         half _OutlineWidth;
         
-
         UNITY_INSTANCING_BUFFER_START(Props)
         UNITY_INSTANCING_BUFFER_END(Props)
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             float3 dirCamera = normalize(_WorldSpaceCameraPos - IN.worldPos);
-            float Ndoth = max(0, dot(IN.worldNormal, dirCamera));
+            float Ndoth = max(0, dot(o.Normal, dirCamera));
             float rampValue = tex2D(_RampTexture, float2(Ndoth, 0.5)).r;
-
             float outline = 1 - smoothstep(0, _OutlineWidth, Ndoth);
+            
             o.Emission = _OutlineColor.rgb * outline;
-            o.Albedo = _Color.rgb * rampValue;
+            o.Albedo = tex2D(_MainTex, IN.uv_MainTex).rgb * rampValue;
 
         }
         ENDCG
